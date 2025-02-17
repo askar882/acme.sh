@@ -143,7 +143,9 @@ _rest() {
   version="2021-03-23"
   algorithm="TC3-HMAC-SHA256"
   timestamp=$(date +%s)
+  _debug "timestamp: $timestamp"
   date=$(date -u -d @"$timestamp" +"%Y-%m-%d")
+  _debug "date: $date"
 
   # 1. Splice standard request string.
   http_request_method="POST"
@@ -153,20 +155,24 @@ _rest() {
   signed_headers="content-type;host;x-tc-action"
   hashed_request_payload=$(printf "$payload" | openssl sha256 -hex | awk '{print $2}')
   canonical_request="POST\n$canonical_uri\n$canonical_querystring\n$canonical_headers\n$signed_headers\n$hashed_request_payload"
+  _debug "canonical_request: $canonical_request"
 
   # 2. Splice string to be signed.
   credential_scope="$date/$service/tc3_request"
   hashed_canonical_request=$(printf "$canonical_request" | openssl sha256 -hex | awk '{print $2}')
   string_to_sign="$algorithm\n$timestamp\n$credential_scope\n$hashed_canonical_request"
+  _debug "string_to_sign: $string_to_sign"
 
   # 3. Calculate signature.
   secret_date=$(printf "$date" | openssl sha256 -hmac "TC3$DP_Key" | awk '{print $2}')
   secret_service=$(printf $service | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_date" | awk '{print $2}')
   secret_signing=$(printf 'tc3_request' | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_service" | awk '{print $2}')
   signature=$(printf "$string_to_sign" | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_signing" | awk '{print $2}')
+  _debug "signature: $signature"
 
   # 4. Splice Authorization header.
   authorization="$algorithm Credential=$DP_Id/$credential_scope, SignedHeaders=$signed_headers, Signature=$signature"
+  _debug "authorization: $authorization"
 
   # 5. Initiate request.
   _debug2 payload "$payload"
