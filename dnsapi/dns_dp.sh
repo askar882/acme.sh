@@ -85,7 +85,7 @@ add_record() {
 
   _info "Adding record"
 
-  if ! _rest "CreateTXTRecord" "{\"Domain\":\"$_domain\",\"RecordLine\":\"默认\",\"Value\":\"$txtvalue\",\"SubDomain\":\"$_sub_domain\"}"; then
+  if ! _rest "CreateTXTRecord" "{\"Domain\":\"$_domain\",\"RecordLine\":\"\u9ed8\u8ba4\",\"Value\":\"$txtvalue\",\"SubDomain\":\"$_sub_domain\"}"; then
     _err "CreateTXTRecord error."
     return 1
   fi
