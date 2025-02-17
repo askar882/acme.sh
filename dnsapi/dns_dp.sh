@@ -145,6 +145,10 @@ _rest() {
   timestamp=$(date +%s)
   _debug "timestamp: $timestamp"
   date=$(date -u -d @"$timestamp" +"%Y-%m-%d")
+  #BSD
+  if [ -z "$date" ]; then
+    date=$(date -u -r "$timestamp" +"%Y-%m-%d")
+  fi
   _debug "date: $date"
 
   # 1. Splice standard request string.
